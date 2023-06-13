@@ -1,0 +1,160 @@
+{
+  "name": "BPIC17",
+  "version": "1.1.0",
+  "nodes": [
+    {
+      "type": "ActivityNode",
+      "labels": [
+        "Activity"
+      ],
+      "constructed_by_node": {
+        "node": "(eventEntry:EventEntry)"
+      },
+      "attributes": [
+        {
+          "attribute_name": "eventType"
+        }
+      ]
+    },
+    {
+      "type": "EventNode",
+      "labels": [
+        "Event"
+      ],
+      "constructed_by_node": {
+        "node": "(eventEntry:EventEntry)"
+      },
+      "attributes": [
+        {
+          "attribute_name": "timestamp"
+        },
+        {
+          "attribute_name": "lifecycle"
+        },
+        {
+          "attribute_name": "eventOrigin"
+        }
+      ]
+    },
+    {
+      "type": "EntityApplicationNode",
+      "labels": [
+        "Entity",
+        "Application"
+      ],
+      "constructed_by_node": {
+          "node": "(entityEntry:EntityEntry {eventOrigin = 'Application'})"
+      },
+      "attributes": [
+        {
+          "attribute_name": "case",
+          "rename_to": "sysId"
+        },
+        {
+          "attribute_name": "applicationType"
+        },
+        {
+          "attribute_name": "loanGoal"
+        },
+        {
+          "attribute_name": "requestedAmount"
+        }
+      ]
+    },
+    {
+      "type": "EntityWorkItemNode",
+      "labels": [
+        "Entity",
+        "WorkItem"
+      ],
+      "constructed_by_node": {
+        "node": "(entityEntry:EntityEntry {eventOrigin = 'Workflow'})"
+      },
+      "attributes": [
+        {
+          "attribute_name": "eventId",
+          "rename_to": "sysId"
+        }
+      ]
+    },
+    {
+      "type": "EntityOfferNode",
+      "labels": [
+        "Entity",
+        "Offer"
+      ],
+      "constructed_by_node": {
+        "node": "(entityEntry:EntityEntry WHERE entityEntry.eventOrigin = 'Offer' AND entityEntry.eventId STARTS WITH 'OFFER_')"
+      },
+      "entity_attributes": [
+        {
+          "attribute_name": "eventId",
+          "rename_to": "sysId"
+        },
+        {
+          "attribute_name": "creditScore"
+        },
+        {
+          "attribute_name": "firstWithdrawalAmount"
+        },
+        {
+          "attribute_name": "monthlyCost"
+        },
+        {
+          "attribute_name": "numberOfTerms"
+        },
+        {
+          "attribute_name": "offeredAmount"
+        }
+      ]
+    },
+    {
+      "type": "EntityResourceNode",
+      "labels": [
+        "Entity",
+        "Resource"
+      ],
+      "constructed_by_node": {
+        "node_label": "EntityEntry"
+      },
+      "entity_attributes": [
+        {
+          "attribute_name": "resource",
+          "rename_to": "sysId"
+        }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "type": "Application-hasParticipantRelation",
+      "relation": "(EventNode) - [:HAS_PARTICIPANT] -> (EntityApplicationNode)",
+      "condition": "EventEntry.case == EntityApplicationNode.sysId"
+    },
+    {
+      "type": "WorkItem-hasParticipantRelation",
+      "relation": "(EventNode) - [:HAS_PARTICIPANT] -> (EntityWorkItemNode)",
+      "condition": "EventEntry.eventId == EntityWorkItemNode.sysId"
+    },
+    {
+      "type": "Offer-hasParticipantRelation",
+      "relation": "(EventNode) - [:HAS_PARTICIPANT] -> (EntityOfferNode)",
+      "condition": "EventEntry.eventId == EntityOfferNode.sysId || eventEntry.offerId == EntityOfferNode.sysId"
+    },
+    {
+      "type": "Resource-hasParticipantRelation",
+      "relation": "(EventNode) - [:HAS_PARTICIPANT] -> (EntityResourceNode)",
+      "condition": "EventEntry.resource == EntityResourceNode.sysId"
+    },
+    {
+      "type": "Application-WorkItemRelation",
+      "relation": "(EntityWorkItemNode) - [:PART_OF] -> (EntityApplicationNode)",
+      "condition": "EntityEntry.case == EntityApplicationNode.sysId"
+    },
+    {
+      "type": "Application-OfferRelation",
+      "relation": "(EntityOfferNode) - [:OFFER_OF] -> (EntityApplicationNode)",
+      "condition": "EntityEntry.case == EntityApplicationNode.sysId"
+    }
+  ]
+}
