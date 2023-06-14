@@ -15,18 +15,19 @@ from colorama import Fore
 
 connection = authentication.connections_map[authentication.Connections.LOCAL]
 
-dataset_name = 'BPIC14'
+dataset_name = 'BPIC17'
+version = 'v1.1'
 use_sample = True
 use_preprocessed_files = False
 
-semantic_header_path = Path(f'json_files/{dataset_name}.json')
+semantic_header_path = Path(f'json_files/{dataset_name}{version}.json')
 
 query_interpreter = Interpreter("Cypher")
 semantic_header = SemanticHeader.create_semantic_header(semantic_header_path, query_interpreter)
 perf_path = os.path.join("..", "perf", dataset_name, f"{dataset_name}Performance.csv")
 number_of_steps = 100
 
-ds_path = Path(f'json_files/{dataset_name}_DS.json')
+ds_path = Path(f'json_files/{dataset_name}_DS{version}.json')
 datastructures = ImportedDataStructures(ds_path)
 
 step_clear_db = True
@@ -79,8 +80,12 @@ def populate_graph(graph: EventKnowledgeGraph, perf: Performance):
     perf.finished_step(log_message=f"(:Log) nodes and [:HAS] relations done")
 
     # for each entity, we add the entity nodes to graph and correlate them to the correct events
-    graph.create_entities_by_nodes()
-    perf.finished_step(log_message=f"(:Entity) nodes done")
+    # graph.create_entities_by_nodes()
+    graph.create_nodes()
+    perf.finished_step(log_message=f"Nodes done")
+
+    graph.create_relationships()
+    perf.finished_step(log_message=f"Relations done")
 
     graph.correlate_events_to_entities()
     perf.finished_step(log_message=f"[:CORR] edges done")

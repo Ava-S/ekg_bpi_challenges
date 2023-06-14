@@ -3,158 +3,119 @@
   "version": "1.1.0",
   "nodes": [
     {
-      "type": "ActivityNode",
-      "labels": [
-        "Activity"
-      ],
-      "constructed_by_node": {
-        "node": "(eventEntry:EventEntry)"
-      },
-      "attributes": [
-        {
-          "attribute_name": "eventType"
-        }
-      ]
+      "node_description": "(eventEntryNode:EventEntry {activity STR, lifecycle STR, timestamp DATETIME, eventId STR, eventOrigin STR, action STR})"
     },
     {
-      "type": "EventNode",
-      "labels": [
-        "Event"
-      ],
-      "constructed_by_node": {
-        "node": "(eventEntry:EventEntry)"
-      },
-      "attributes": [
-        {
-          "attribute_name": "timestamp"
-        },
-        {
-          "attribute_name": "lifecycle"
-        },
-        {
-          "attribute_name": "eventOrigin"
-        }
-      ]
+      "node_description": "(entityEntryNode:EntityEntry)"
     },
     {
-      "type": "EntityApplicationNode",
-      "labels": [
-        "Entity",
-        "Application"
-      ],
-      "constructed_by_node": {
-          "node": "(entityEntry:EntityEntry {eventOrigin = 'Application'})"
-      },
-      "attributes": [
-        {
-          "attribute_name": "case",
-          "rename_to": "sysId"
-        },
-        {
-          "attribute_name": "applicationType"
-        },
-        {
-          "attribute_name": "loanGoal"
-        },
-        {
-          "attribute_name": "requestedAmount"
-        }
-      ]
+      "node_description": "(entityApplicationEntryNode:entityEntryNode {eventOrigin STR, case STR, applicationType STR, loanGoal STR, requestedAmount DOUBLE})"
     },
     {
-      "type": "EntityWorkItemNode",
-      "labels": [
-        "Entity",
-        "WorkItem"
-      ],
-      "constructed_by_node": {
-        "node": "(entityEntry:EntityEntry {eventOrigin = 'Workflow'})"
-      },
-      "attributes": [
-        {
-          "attribute_name": "eventId",
-          "rename_to": "sysId"
-        }
-      ]
+      "node_description": "(entityWorkItemEntryNode:entityEntryNode {eventId STR, eventOrigin STR})"
     },
     {
-      "type": "EntityOfferNode",
-      "labels": [
-        "Entity",
-        "Offer"
-      ],
-      "constructed_by_node": {
-        "node": "(entityEntry:EntityEntry WHERE entityEntry.eventOrigin = 'Offer' AND entityEntry.eventId STARTS WITH 'OFFER_')"
-      },
-      "entity_attributes": [
-        {
-          "attribute_name": "eventId",
-          "rename_to": "sysId"
-        },
-        {
-          "attribute_name": "creditScore"
-        },
-        {
-          "attribute_name": "firstWithdrawalAmount"
-        },
-        {
-          "attribute_name": "monthlyCost"
-        },
-        {
-          "attribute_name": "numberOfTerms"
-        },
-        {
-          "attribute_name": "offeredAmount"
-        }
-      ]
+      "node_description": "(entityOfferNodeEntryNode:entityEntryNode {eventId STR, eventOrigin STR, firstWithdrawalAmount DOUBLE, creditScore DOUBLE, numberOfTerms INT, offeredAmount DOUBLE})"
     },
     {
-      "type": "EntityResourceNode",
-      "labels": [
-        "Entity",
-        "Resource"
-      ],
-      "constructed_by_node": {
-        "node_label": "EntityEntry"
-      },
-      "entity_attributes": [
-        {
-          "attribute_name": "resource",
-          "rename_to": "sysId"
-        }
-      ]
+      "node_description": "(entityResourceEntryNode:entityEntryNode {resource STR})"
+    },
+    {
+      "node_description": "(activityNode:Activity {eventType STR})",
+      "constructor": {
+        "antecedents": [
+          "(e:eventEntryNode)"
+        ],
+        "consequents": [
+          "MERGE (a:activityNode {eventType: e.activity})"
+        ]
+      }
+    },
+    {
+      "node_description": "(eventNode:Event {timestamp DATETIME, lifecycle STR, eventOrigin STR})",
+      "constructor": {
+        "antecedents": [
+          "(e:eventEntryNode)"
+        ],
+        "consequents": [
+          "CREATE (en:eventNode {timestamp: e.timestamp, lifecycle: e.lifecycle, eventOrigin: e.eventOrigin})",
+          "MERGE (e) <- [r:eventPrevalenceRelation] - (en)"
+        ]
+      }
+    },
+    {
+      "node_description": "(entityNode:Entity {sysId STR})"
+    },
+    {
+      "node_description": "(entityApplicationNode:entityNode:Application {applicationType STR, loanGoal STR, requestedAmount DOUBLE})",
+      "constructor": {
+        "antecedents": [
+          "(e:entityApplicationEntryNode {eventOrigin: 'Application'})"
+        ],
+        "consequents": [
+          "MERGE (en:entityApplicationNode {sysId: e.case, applicationType: e.applicationType, loanGoal: e.loanGoal, requestedAmount: e.requestedAmount)",
+          "MERGE (e) <- [r:entityPrevalenceRelation] - (en)"
+        ]
+      }
+    },
+    {
+      "node_description": "(entityWorkItemNode:entityNode:WorkItem)",
+      "constructor": {
+        "antecedents": [
+          "(e:entityWorkItemEntryNode {eventOrigin: 'Workflow'})"
+        ],
+        "consequents": [
+          "MERGE (en:entityWorkItemEntryNode {sysId: e.eventId)",
+          "MERGE (e) <- [r:entityPrevalenceRelation] - (en)"
+        ]
+      }
+    },
+    {
+      "node_description": "(entityOfferNode:entityNode:Offer {creditScore DOUBLE, firstWithdrawalAmount DOUBLE, monthlyCost DOUBLE, numberOfTerms INT, offeredAmount DOUBLE})",
+      "constructor": {
+        "antecedents": [
+          "(e:entityOfferNodeEntryNode WHERE e.eventOrigin = 'Offer' AND e.eventId STARTS WITH 'Offer_')"
+        ],
+        "consequents": [
+          "MERGE (en:entityOfferNode {sysId: e.eventId, creditScore: e.creditScore, firstWithdrawalAmount: e.firstWithdrawalAmount, monthlyCost: e.monthlyCost, numberOfTerms: e.numberOfTerms, offeredAmount: e.offeredAmount})",
+          "MERGE (e) <- [r:entityPrevalenceRelation] - (en)"
+        ]
+      }
+    },
+    {
+      "node_description": "(entityResourceNode:entityNode:Resource)",
+      "constructor": {
+        "antecedents": [
+          "(e:entityResourceEntryNode)"
+        ],
+        "consequents": [
+          "MERGE (en:entityResourceNode {sysId: e.resource})",
+          "MERGE (e) <- [r:entityPrevalenceRelation] - (en)"
+        ]
+      }
     }
   ],
-  "relations": [
+  "relationships": [
     {
-      "type": "Application-hasParticipantRelation",
-      "relation": "(EventNode) - [:HAS_PARTICIPANT] -> (EntityApplicationNode)",
-      "condition": "EventEntry.case == EntityApplicationNode.sysId"
+      "relationship_description": "(entityEntryNode) <- [entityPrevalenceRelation:prevalence] - (entityNode)"
     },
     {
-      "type": "WorkItem-hasParticipantRelation",
-      "relation": "(EventNode) - [:HAS_PARTICIPANT] -> (EntityWorkItemNode)",
-      "condition": "EventEntry.eventId == EntityWorkItemNode.sysId"
+      "relationship_description": "(eventEntryNode) <- [eventPrevalenceRelation:prevalence] - (eventNode)"
     },
     {
-      "type": "Offer-hasParticipantRelation",
-      "relation": "(EventNode) - [:HAS_PARTICIPANT] -> (EntityOfferNode)",
-      "condition": "EventEntry.eventId == EntityOfferNode.sysId || eventEntry.offerId == EntityOfferNode.sysId"
+      "relationship_description": "(entityNode) <- [corrRelation:corr] - (eventNode)"
     },
     {
-      "type": "Resource-hasParticipantRelation",
-      "relation": "(EventNode) - [:HAS_PARTICIPANT] -> (EntityResourceNode)",
-      "condition": "EventEntry.resource == EntityResourceNode.sysId"
-    },
-    {
-      "type": "Application-WorkItemRelation",
-      "relation": "(EntityWorkItemNode) - [:PART_OF] -> (EntityApplicationNode)",
-      "condition": "EntityEntry.case == EntityApplicationNode.sysId"
-    },
-    {
-      "type": "Application-OfferRelation",
-      "relation": "(EntityOfferNode) - [:OFFER_OF] -> (EntityApplicationNode)",
-      "condition": "EntityEntry.case == EntityApplicationNode.sysId"
+      "relationship_description": "(entityApplicationNode) <- [entityApplicationCorrRelation:corrRelation] - (eventNode)",
+      "constructor": {
+        "antecedents": [
+          "(:entityApplicationEntryNode {eventOrigin: 'Application'}) <- [:entityPrevalenceRelation] - (n:entityApplicationNode)",
+          "(:eventEntryNode {case: n.sysId}) <- [:eventPrevalenceRelation] - (e:eventNode)"
+        ],
+        "consequents": [
+          "MERGE (e) <- [r:corrRelation] - (n)"
+        ]
+      }
     }
   ]
 }
