@@ -87,33 +87,33 @@ def populate_graph(graph: EventKnowledgeGraph, perf: Performance):
     graph.create_relationships()
     perf.finished_step(log_message=f"Relations done")
 
-    graph.correlate_events_to_entities()
-    perf.finished_step(log_message=f"[:CORR] edges done")
-
-    if dataset_name == "BPIC17":
-        graph.do_custom_query("get_corr_between_o_created_events_and_offer_entities")
-
-    graph.create_classes()
-    perf.finished_step(log_message=f"(:Class) nodes done")
-
-    graph.create_entity_relations_using_nodes()
-    graph.create_entity_relations_using_relations()
-    perf.finished_step(log_message=f"[:REL] edges done")
-
-    graph.create_entities_by_relations()
-    perf.finished_step(log_message=f"Reified (:Entity) nodes done")
-
-    graph.correlate_events_to_reification()
-    perf.finished_step(log_message=f"[:CORR] edges for Reified (:Entity) nodes done")
-
-    graph.create_df_edges()
-    perf.finished_step(log_message=f"[:DF] edges done")
-
-    graph.delete_parallel_dfs_derived()
-    perf.finished_step(log_message=f"Deleted all duplicate parallel [:DF] edges done")
-
-    graph.merge_duplicate_df()
-    perf.finished_step(log_message=f"Merged duplicate [:DF] edges done")
+    # graph.correlate_events_to_entities()
+    # perf.finished_step(log_message=f"[:CORR] edges done")
+    #
+    # if dataset_name == "BPIC17":
+    #     graph.do_custom_query("get_corr_between_o_created_events_and_offer_entities")
+    #
+    # graph.create_classes()
+    # perf.finished_step(log_message=f"(:Class) nodes done")
+    #
+    # graph.create_entity_relations_using_nodes()
+    # graph.create_entity_relations_using_relations()
+    # perf.finished_step(log_message=f"[:REL] edges done")
+    #
+    # graph.create_entities_by_relations()
+    # perf.finished_step(log_message=f"Reified (:Entity) nodes done")
+    #
+    # graph.correlate_events_to_reification()
+    # perf.finished_step(log_message=f"[:CORR] edges for Reified (:Entity) nodes done")
+    #
+    # graph.create_df_edges()
+    # perf.finished_step(log_message=f"[:DF] edges done")
+    #
+    # graph.delete_parallel_dfs_derived()
+    # perf.finished_step(log_message=f"Deleted all duplicate parallel [:DF] edges done")
+    #
+    # graph.merge_duplicate_df()
+    # perf.finished_step(log_message=f"Merged duplicate [:DF] edges done")
 
 
 def main() -> None:
